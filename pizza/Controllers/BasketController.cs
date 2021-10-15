@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,13 +28,13 @@ namespace pizza.Controllers
                 return Ok(_baskets);
             }
 
-            return NotFound();
+            return Ok("Le panier est vide");
         }
         
         [HttpDelete]
         public ActionResult<BasketDto> Clear()
         {
-            _baskets.Clear();
+            _baskets = null;
             return Ok();
         }
         
@@ -48,8 +49,28 @@ namespace pizza.Controllers
                 {
                     _baskets = new List<BasketDto>();
                 }
-                
-                _baskets.Add(new BasketDto(1, pizza.Name, pizza.Price));
+
+                IEnumerable<BasketDto> query = _baskets.Where(n => n.PizzaName == pizza.Name);
+
+                if (query.Count() != 0)
+                {
+                    int index = _baskets.FindIndex(item => pizza.Name == item.PizzaName);
+                    double prixTotal = 0;
+                    try
+                    {
+                        prixTotal = Double.Parse(_baskets[index].Price.Replace("€","")) + Double.Parse(pizza.Price.Replace("€", ""));
+                    }
+                    catch(Exception e)
+                    {
+
+                    }
+                    _baskets[index].Price = prixTotal.ToString()+"€";
+                }
+                else
+                {
+                    _baskets.Add(new BasketDto(1, pizza.Name, pizza.Price));
+                }
+
                 return Ok(_baskets);
             }
             
@@ -57,8 +78,8 @@ namespace pizza.Controllers
         }
 
         [HttpGet]
-        [Route("list")]
-        public async Task<ActionResult> List(string name)
+        [Route("list/{name}")]
+        public async Task<ActionResult> List(string name = null)
         {
             List<string> fruits = new List<string>();  
             fruits.Add("Apple");  
@@ -94,7 +115,7 @@ namespace pizza.Controllers
                 Parallel.ForEach(fruits, fruit =>
                 {
                     Console.WriteLine(fruit);
-                    Task.Delay(500);
+                    Task.Delay(50);
                 });
             }
             else
@@ -102,7 +123,7 @@ namespace pizza.Controllers
                 foreach (string fruit in fruits)
                 {
                     Console.WriteLine(fruit);
-                    await Task.Delay(500);
+                    await Task.Delay(50);
                 }
             }
             
