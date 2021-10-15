@@ -62,13 +62,14 @@ namespace pizza.Controllers
                     }
                     catch(Exception e)
                     {
-
+                        throw e;
                     }
                     _baskets[index].Price = prixTotal.ToString()+"€";
+                    _baskets[index].Quantite = _baskets[index].Quantite + 1;
                 }
                 else
                 {
-                    _baskets.Add(new BasketDto(1, pizza.Name, pizza.Price));
+                    _baskets.Add(new BasketDto(1,pizza.Name, pizza.Price,1));
                 }
 
                 return Ok(_baskets);
